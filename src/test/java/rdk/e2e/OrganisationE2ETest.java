@@ -41,5 +41,4 @@ public class OrganisationE2ETest {
         
         assertThat(newOrganisation.isActivationAwaiting()).isTrue();
     }
-    
 }

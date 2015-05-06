@@ -3,7 +3,7 @@ package rdk.model;
 
 public class Organisation {
 
-    private boolean active;
+    private boolean active = false;
     
     private boolean activationAwaiting;
 
