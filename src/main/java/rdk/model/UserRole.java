@@ -2,5 +2,5 @@ package rdk.model;
 
 
 public enum UserRole {
-    ADMIN, OWNER, REPRESENTATVE;
+    ADMIN, OWNER, REPRESENTATIVE, REGULAR;
 }

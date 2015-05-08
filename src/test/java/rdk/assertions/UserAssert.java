@@ -1,7 +1,9 @@
 package rdk.assertions;
 
 import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.Assertions;
 
+import rdk.model.Organisation;
 import rdk.model.User;
 import rdk.model.UserRole;
 
@@ -13,10 +15,18 @@ public class UserAssert extends AbstractAssert<UserAssert, User> {
     }
     
     public UserAssert hasRole(UserRole role) {
+        isNotNull();
+        Assertions.assertThat(actual.getRole()).isEqualTo(role);
         return this;
     }
     
     public static UserAssert assertThat(User actual) {
         return new UserAssert(actual);
+    }
+
+    public UserAssert isInOrganisation(Organisation newOrganisation) {
+        isNotNull();
+        Assertions.assertThat(actual.getName()).isEqualTo(newOrganisation.getOwner().getName());
+        return this;
     }
 }

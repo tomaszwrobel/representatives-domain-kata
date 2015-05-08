@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import rdk.model.Organisation;
 import rdk.model.User;
 
+
 @Service
 public class OrganisationService {
 
@@ -13,6 +14,7 @@ public class OrganisationService {
     }
 
     public void requestForActivation(Organisation newOrganisation, User user) {
+        newOrganisation.awaitForActivation();
     }
 
 }
