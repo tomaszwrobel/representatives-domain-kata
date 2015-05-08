@@ -1,7 +1,10 @@
 package rdk.service;
 
+import static rdk.model.Organisation.OrganisationBuilder.organisation;
+
 import org.springframework.stereotype.Service;
 
+import rdk.exception.UnauthorizedAccessException;
 import rdk.model.Organisation;
 import rdk.model.User;
 
@@ -9,12 +12,17 @@ import rdk.model.User;
 @Service
 public class OrganisationService {
 
-    public Organisation createNewOrganisation(String string, User user) {
-        return new Organisation();
+    public Organisation createNewOrganisation(String name, User owner) {
+        owner.setOwnerRole();
+        return organisation(name).ownedBy(owner).build();
     }
 
-    public void requestForActivation(Organisation newOrganisation, User user) {
-        newOrganisation.awaitForActivation();
+    public void requestForActivation(Organisation newOrganisation, User user) throws UnauthorizedAccessException {
+        if (newOrganisation.isOwnedBy(user)) {
+            newOrganisation.awaitForActivation();
+        } else {
+            throw new UnauthorizedAccessException("User " + user.getName() + " has no rights for organisation activation");
+        }
     }
 
 }

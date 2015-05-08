@@ -54,4 +54,8 @@ public class User {
 
     }
 
+    public void setOwnerRole() {
+        this.role = UserRole.OWNER;
+    }
+
 }

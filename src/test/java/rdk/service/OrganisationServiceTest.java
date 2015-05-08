@@ -7,6 +7,7 @@ import static rdk.model.Organisation.OrganisationBuilder.organisation;
 import org.junit.Before;
 import org.junit.Test;
 
+import rdk.exception.UnauthorizedAccessException;
 import rdk.model.Organisation;
 import rdk.model.User;
 import rdk.model.UserRole;
@@ -26,7 +27,7 @@ public class OrganisationServiceTest {
     }
 
     @Test
-    public void userBecomeOwnerAfterOrganisationCreation() {
+    public void userBecomesOwnerAfterOrganisationCreation() {
         Organisation organisation = organisationService.createNewOrganisation("some organisation", someUser);
 
         assertThat(someUser.getRole()).isEqualTo(UserRole.OWNER);
@@ -40,19 +41,18 @@ public class OrganisationServiceTest {
         assertThat(organisation.isActive()).isFalse();
     }
 
-    @Test
-    public void requestsForOrganisationActivationByRegularUser() {
+    @Test(expected = UnauthorizedAccessException.class)
+    public void requestsForOrganisationActivationByRegularUser() throws UnauthorizedAccessException {
         Organisation organisation = organisationService.createNewOrganisation("name", someUser);
+        User unauthorizedUser = user("unauthorized User").withRole(UserRole.REGULAR).build();
 
         assertThat(organisation.isActivationAwaiting()).isFalse();
 
-        organisationService.requestForActivation(organisation, someUser);
-
-        assertThat(organisation.isActivationAwaiting()).isFalse();
+        organisationService.requestForActivation(organisation, unauthorizedUser);
     }
 
     @Test
-    public void ownerRequestsForActivation() {
+    public void ownerRequestsForActivation() throws UnauthorizedAccessException {
         User organisationOwner = user("user").withRole(UserRole.OWNER).build();
         Organisation newOrganisation = organisation("name").ownedBy(organisationOwner).build();
 

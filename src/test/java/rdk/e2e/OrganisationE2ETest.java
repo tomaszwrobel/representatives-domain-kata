@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import rdk.exception.UnauthorizedAccessException;
 import rdk.init.ApplicationConfig;
 import rdk.model.Organisation;
 import rdk.model.User;
@@ -32,7 +33,7 @@ public class OrganisationE2ETest {
     }
 
     @Test
-    public void createsInactiveOrganisationWithRegularUserAndRequestForActivation() {
+    public void createsInactiveOrganisationWithRegularUserAndRequestForActivation() throws UnauthorizedAccessException {
         Organisation newOrganisation = organisationService.createNewOrganisation("nazwa", user);
 
         assertThat(newOrganisation.isActive()).isFalse();

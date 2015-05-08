@@ -25,6 +25,15 @@ public class Organisation {
     public User getOwner() {
         return owner;
     }
+    
+    public void setOwner(User owner) {
+        this.owner = owner;
+        this.owner.setOwnerRole();
+    }
+    
+    public String getName() {
+        return name;
+    }
 
     public static class OrganisationBuilder {
 
@@ -77,5 +86,9 @@ public class Organisation {
 
             return newOrganisation;
         }
+    }
+
+    public boolean isOwnedBy(User user) {
+        return owner.getName() == user.getName() ? true : false;
     }
 }
