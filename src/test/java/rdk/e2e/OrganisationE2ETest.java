@@ -1,5 +1,6 @@
 package rdk.e2e;
 
+import static rdk.model.User.UserBuilder.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static rdk.assertions.UserAssert.assertThat;
 
@@ -22,26 +23,42 @@ import rdk.service.OrganisationService;
 @ContextConfiguration(classes = { ApplicationConfig.class })
 public class OrganisationE2ETest {
 
+    private static final String REGULAR_TEST_USER = "regular user";
+    
     @Autowired
     OrganisationService organisationService;
 
-    User user;
+    User owner;
 
     @Before
     public void init() {
-        user = new User();
+        owner = user(REGULAR_TEST_USER).withRole(UserRole.REGULAR).build();
     }
 
     @Test
     public void createsInactiveOrganisationWithRegularUserAndRequestForActivation() throws UnauthorizedAccessException {
-        Organisation newOrganisation = organisationService.createNewOrganisation("nazwa", user);
+        Organisation newOrganisation = organisationService.createNewOrganisation("nazwa", owner);
 
         assertThat(newOrganisation.isActive()).isFalse();
-        assertThat(user).hasRole(UserRole.OWNER);
-        assertThat(user).isInOrganisation(newOrganisation);
+        assertThat(owner).hasRole(UserRole.OWNER);
+        assertThat(owner).isOwnerOfOrganisation(newOrganisation);
 
-        organisationService.requestForActivation(newOrganisation, user);
+        organisationService.requestForActivation(newOrganisation, owner);
 
         assertThat(newOrganisation.isActivationAwaiting()).isTrue();
+    }
+    
+    @Test
+    public void createsNewInActiveOrganisationAndAddMember() {
+        User newMember = user("newMember").withRole(UserRole.REGULAR).build();
+        Organisation newOrganisation = organisationService.createNewOrganisation("nowa organizacja", owner);
+        
+        assertThat(newOrganisation.isActive()).isFalse();
+        assertThat(newMember).hasRole(UserRole.REGULAR);
+        
+        organisationService.addMember(newOrganisation, owner, newMember);
+        
+        assertThat(newMember).hasRole(UserRole.REPRESENTATIVE);
+        assertThat(newMember).isInOrganisation(newOrganisation);
     }
 }
