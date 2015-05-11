@@ -58,4 +58,8 @@ public class User {
         this.role = UserRole.OWNER;
     }
 
+    public void setRepresentativeRole() {
+        this.role = UserRole.REPRESENTATIVE;
+    }
+
 }

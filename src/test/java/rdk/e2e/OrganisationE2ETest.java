@@ -34,6 +34,15 @@ public class OrganisationE2ETest {
     public void init() {
         owner = user(REGULAR_TEST_USER).withRole(UserRole.REGULAR).build();
     }
+    
+    @Test
+    public void createsInActiveOrganisationWithRegularUser() {
+        Organisation newOrganisation = organisationService.createNewOrganisation("nazwa", owner);
+
+        assertThat(newOrganisation.isActive()).isFalse();
+        assertThat(owner).hasRole(UserRole.OWNER);
+        assertThat(owner).isOwnerOfOrganisation(newOrganisation);
+    }
 
     @Test
     public void createsInactiveOrganisationWithRegularUserAndRequestForActivation() throws UnauthorizedAccessException {
@@ -49,7 +58,7 @@ public class OrganisationE2ETest {
     }
     
     @Test
-    public void createsNewInActiveOrganisationAndAddMember() {
+    public void createsNewInActiveOrganisationAndAddMember() throws UnauthorizedAccessException {
         User newMember = user("newMember").withRole(UserRole.REGULAR).build();
         Organisation newOrganisation = organisationService.createNewOrganisation("nowa organizacja", owner);
         

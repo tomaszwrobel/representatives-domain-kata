@@ -11,6 +11,7 @@ import rdk.exception.UnauthorizedAccessException;
 import rdk.model.Organisation;
 import rdk.model.User;
 import rdk.model.UserRole;
+import static rdk.assertions.UserAssert.assertThat;
 
 
 public class OrganisationServiceTest {
@@ -43,8 +44,8 @@ public class OrganisationServiceTest {
 
     @Test(expected = UnauthorizedAccessException.class)
     public void requestsForOrganisationActivationByRegularUser() throws UnauthorizedAccessException {
-        Organisation organisation = organisationService.createNewOrganisation("name", someUser);
         User unauthorizedUser = user("unauthorized User").withRole(UserRole.REGULAR).build();
+        Organisation organisation = organisation("name").ownedBy(someUser).build();
 
         assertThat(organisation.isActivationAwaiting()).isFalse();
 
@@ -59,5 +60,26 @@ public class OrganisationServiceTest {
         organisationService.requestForActivation(newOrganisation, organisationOwner);
 
         assertThat(newOrganisation.isActivationAwaiting()).isTrue();
+    }
+    
+    @Test
+    public void ownerAddsNewMemberToInActiveOrganisation() throws UnauthorizedAccessException {
+        User organisationOwner = user("user").withRole(UserRole.OWNER).build();
+        Organisation organisation = organisation("name").ownedBy(organisationOwner).build();
+        User newMember = user("new Member").withRole(UserRole.REGULAR).build();
+        
+        organisationService.addMember(organisation, organisationOwner, newMember);
+        
+        assertThat(newMember).isInOrganisation(organisation);
+        assertThat(newMember).hasRole(UserRole.REPRESENTATIVE);
+    }
+    
+    @Test(expected = UnauthorizedAccessException.class)
+    public void addsNewMemberByRegularUser() throws UnauthorizedAccessException {
+        User unauthorizedUSer = user("unauthorized User").withRole(UserRole.REGULAR).build();
+        User newMember = user("new Member").withRole(UserRole.REGULAR).build();
+        Organisation organisation = organisation("name").ownedBy(someUser).build();
+        
+        organisationService.addMember(organisation, unauthorizedUSer, newMember);
     }
 }

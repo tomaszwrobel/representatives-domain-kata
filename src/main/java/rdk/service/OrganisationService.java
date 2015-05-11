@@ -25,4 +25,11 @@ public class OrganisationService {
         }
     }
 
+    public void addMember(Organisation organisation, User owner, User newMember) throws UnauthorizedAccessException {
+        if (organisation.assertMemberCanBeAddedBy(owner)) {
+            organisation.addMember(newMember);
+        } else {
+            throw new UnauthorizedAccessException("User " + owner.getName() + " has no rigths for adding new members");
+        }
+    }
 }

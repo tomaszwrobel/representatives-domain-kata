@@ -1,10 +1,15 @@
 package rdk.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Organisation {
 
     private String name;
 
     private User owner;
+    
+    private List<User> members;
 
     private boolean active = false;
 
@@ -33,6 +38,13 @@ public class Organisation {
     
     public String getName() {
         return name;
+    }
+    
+    public List<User> getMembers() {
+        if (members == null) {
+            members = new ArrayList<User>();
+        }
+        return members;
     }
 
     public static class OrganisationBuilder {
@@ -90,5 +102,16 @@ public class Organisation {
 
     public boolean isOwnedBy(User user) {
         return owner.getName() == user.getName() ? true : false;
+    }
+
+    public void addMember(User newMember) {
+        if (!isActive()) {
+            newMember.setRepresentativeRole();
+        }
+        getMembers().add(newMember);
+    }
+
+    public boolean assertMemberCanBeAddedBy(User user) {
+        return (user.getRole() == UserRole.OWNER) && (user.getName() == this.owner.getName()) ? true : false;
     }
 }
