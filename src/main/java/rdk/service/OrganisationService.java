@@ -36,4 +36,8 @@ public class OrganisationService {
     public void setNumOfRequiredAcknowledgments(Organisation organisation, int defaultNumOfAcknowledgments, User owner) throws UnauthorizedAccessException {
         organisation.setNumOfRequiredAcknowledgments(defaultNumOfAcknowledgments, owner);
     }
+
+    public void activateOrganisation(Organisation organisation, User admin) throws UnauthorizedAccessException {
+        organisation.activateBy(admin);
+    }
 }

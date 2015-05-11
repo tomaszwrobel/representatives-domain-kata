@@ -145,4 +145,16 @@ public class Organisation {
     public int getNumOfAcknowledgments() {
         return numOfAcknowledgments;
     }
+
+    public void activateBy(User admin) throws UnauthorizedAccessException {
+        if (assertIsAdmin(admin)) {
+            active = true;
+        } else {
+            throw new UnauthorizedAccessException("Only admin can activate organisation");
+        }
+    }
+
+    private boolean assertIsAdmin(User admin) {
+        return admin.getRole() == UserRole.ADMIN ? true : false;
+    }
 }
