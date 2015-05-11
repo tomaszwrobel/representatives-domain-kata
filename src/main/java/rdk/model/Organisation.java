@@ -1,7 +1,10 @@
 package rdk.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import rdk.exception.UnauthorizedAccessException;
 
 public class Organisation {
 
@@ -14,6 +17,8 @@ public class Organisation {
     private boolean active = false;
 
     private boolean activationAwaiting = false;
+
+    private int numOfAcknowledgments = 3;
 
     public boolean isActive() {
         return active;
@@ -56,6 +61,8 @@ public class Organisation {
         private boolean isActive;
 
         private boolean activationAwaiting;
+        
+        private List<User> members;
 
         public OrganisationBuilder() {
 
@@ -87,6 +94,14 @@ public class Organisation {
             this.isActive = true;
             return this;
         }
+        
+        public OrganisationBuilder withMembers(User... users) {
+            if (members == null) {
+                members = new ArrayList<User>();
+            }
+            members.addAll(Arrays.asList(users));
+            return this;
+        }
 
         public Organisation build() {
             Organisation newOrganisation = new Organisation();
@@ -105,13 +120,29 @@ public class Organisation {
     }
 
     public void addMember(User newMember) {
-        if (!isActive()) {
+        if (!isActive() && (newMember.getRole() != UserRole.OWNER)) {
             newMember.setRepresentativeRole();
+            getMembers().add(newMember);
         }
-        getMembers().add(newMember);
     }
 
     public boolean assertMemberCanBeAddedBy(User user) {
         return (user.getRole() == UserRole.OWNER) && (user.getName() == this.owner.getName()) ? true : false;
+    }
+
+    public void setNumOfRequiredAcknowledgments(int numOfRequiredAcknowledgments, User owner) throws UnauthorizedAccessException {
+        if (assertIsAnOwner(owner)) {
+            this.numOfAcknowledgments  = numOfRequiredAcknowledgments;
+        } else {
+            throw new UnauthorizedAccessException("User " + owner.getName() + " has no rights to change number of acknowledgments");
+        }
+    }
+
+    private boolean assertIsAnOwner(User user) {
+        return java.util.Objects.equals(user, this.owner);
+    }
+
+    public int getNumOfAcknowledgments() {
+        return numOfAcknowledgments;
     }
 }

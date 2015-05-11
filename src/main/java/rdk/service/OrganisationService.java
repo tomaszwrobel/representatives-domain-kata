@@ -12,16 +12,16 @@ import rdk.model.User;
 @Service
 public class OrganisationService {
 
-    public Organisation createNewOrganisation(String name, User owner) {
-        owner.setOwnerRole();
-        return organisation(name).ownedBy(owner).build();
+    public Organisation createNewOrganisation(String name, User user) {
+        user.setOwnerRole();
+        return organisation(name).ownedBy(user).build();
     }
 
-    public void requestForActivation(Organisation newOrganisation, User user) throws UnauthorizedAccessException {
-        if (newOrganisation.isOwnedBy(user)) {
+    public void requestForActivation(Organisation newOrganisation, User owner) throws UnauthorizedAccessException {
+        if (newOrganisation.isOwnedBy(owner)) {
             newOrganisation.awaitForActivation();
         } else {
-            throw new UnauthorizedAccessException("User " + user.getName() + " has no rights for organisation activation");
+            throw new UnauthorizedAccessException("User " + owner.getName() + " has no rights for organisation activation");
         }
     }
 
@@ -31,5 +31,9 @@ public class OrganisationService {
         } else {
             throw new UnauthorizedAccessException("User " + owner.getName() + " has no rigths for adding new members");
         }
+    }
+
+    public void setNumOfRequiredAcknowledgments(Organisation organisation, int defaultNumOfAcknowledgments, User owner) throws UnauthorizedAccessException {
+        organisation.setNumOfRequiredAcknowledgments(defaultNumOfAcknowledgments, owner);
     }
 }

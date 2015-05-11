@@ -30,9 +30,15 @@ public class UserAssert extends AbstractAssert<UserAssert, User> {
         return this;
     }
     
-    public UserAssert isInOrganisation(Organisation newOrganisation) {
+    public UserAssert isInOrganisationMembers(Organisation newOrganisation) {
         isNotNull();
         Assertions.assertThat(newOrganisation.getMembers()).contains(actual);
+        return this;
+    }
+    
+    public UserAssert isNotInOrganisationMembers(Organisation organisation) {
+        isNotNull();
+        Assertions.assertThat(organisation.getMembers()).doesNotContain(actual);
         return this;
     }
 }

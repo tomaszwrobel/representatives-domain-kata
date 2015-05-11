@@ -70,16 +70,27 @@ public class OrganisationServiceTest {
         
         organisationService.addMember(organisation, organisationOwner, newMember);
         
-        assertThat(newMember).isInOrganisation(organisation);
+        assertThat(newMember).isInOrganisationMembers(organisation);
         assertThat(newMember).hasRole(UserRole.REPRESENTATIVE);
+    }
+    
+    @Test
+    public void ownerCannotBecomeRepresentativeUser() throws UnauthorizedAccessException {
+        User organisationOwner = user("user").withRole(UserRole.OWNER).build();
+        Organisation organisation = organisation("name").ownedBy(organisationOwner).build();
+        
+        organisationService.addMember(organisation, organisationOwner, organisationOwner);
+        
+        assertThat(organisationOwner).hasRole(UserRole.OWNER);
+        assertThat(organisationOwner).isNotInOrganisationMembers(organisation);
     }
     
     @Test(expected = UnauthorizedAccessException.class)
     public void addsNewMemberByRegularUser() throws UnauthorizedAccessException {
-        User unauthorizedUSer = user("unauthorized User").withRole(UserRole.REGULAR).build();
+        User unauthorizedUser = user("unauthorized User").withRole(UserRole.REGULAR).build();
         User newMember = user("new Member").withRole(UserRole.REGULAR).build();
         Organisation organisation = organisation("name").ownedBy(someUser).build();
         
-        organisationService.addMember(organisation, unauthorizedUSer, newMember);
+        organisationService.addMember(organisation, unauthorizedUser, newMember);
     }
 }
