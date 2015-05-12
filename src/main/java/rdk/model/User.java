@@ -14,8 +14,6 @@ public class User {
 
     private Set<User> promoters;
     
-    private Organisation organisation;
-
     public User() {
     }
 
@@ -31,18 +29,12 @@ public class User {
         return role;
     }
     
-    public Organisation getOrganisation() {
-        return organisation;
-    }
-
     public static class UserBuilder {
 
         private String name;
 
         private UserRole role;
         
-        private Organisation organisation;
-
         public UserBuilder(String name) {
             this.name = name;
         }
@@ -56,17 +48,11 @@ public class User {
             return this;
         }
         
-        public UserBuilder inOrganisation(Organisation organisation) {
-            this.organisation = organisation;
-            return this;
-        }
-
         public User build() {
             User user = new User();
 
             user.name = this.name;
             user.role = this.role;
-            user.organisation = this.organisation;
 
             return user;
         }
@@ -87,5 +73,4 @@ public class User {
         }
         return promoters;
     }
-
 }

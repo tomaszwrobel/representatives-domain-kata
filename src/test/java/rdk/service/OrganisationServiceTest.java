@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static rdk.model.User.UserBuilder.user;
 import static rdk.model.Organisation.OrganisationBuilder.organisation;
 
+import java.util.Arrays;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -92,5 +94,35 @@ public class OrganisationServiceTest {
         Organisation organisation = organisation("name").ownedBy(someUser).build();
         
         organisationService.addMember(organisation, unauthorizedUser, newMember);
+    }
+    
+    @Test
+    public void promotesUser() throws UnauthorizedAccessException {
+        User promotor = user("representative user").withRole(UserRole.REPRESENTATIVE).build();
+        User newMember = user("new user").withRole(UserRole.REGULAR).build();
+        Organisation organisation = organisation("name").ownedBy(someUser).withMembers(promotor, newMember).active().build();
+        
+        organisationService.promoteMemberBy(organisation, newMember, promotor);
+
+        assertThat(newMember).hasBeenPromotedBy(promotor);
+        assertThat(newMember).hasNumberOfAcknowledgments(1);
+    }
+
+    @Test(expected=UnauthorizedAccessException.class)
+    public void regularUserCannotPromoteAnotherUser() throws UnauthorizedAccessException {
+        User regularUser = user("someUser").withRole(UserRole.REGULAR).build();
+        User newMember = user("new user").withRole(UserRole.REGULAR).build();
+        Organisation organisation = organisation("name").ownedBy(someUser).withMembers(regularUser, newMember).active().build();
+
+        organisationService.promoteMemberBy(organisation, someUser, regularUser);
+    }
+
+    @Test(expected=UnauthorizedAccessException.class)
+    public void userCannotBePromotedFromOutsideOfOrganisation() throws UnauthorizedAccessException {
+        User userFromDifferentOrganisation = user("user from different organisation").withRole(UserRole.REPRESENTATIVE).build();
+        User newMember = user("new user").withRole(UserRole.REGULAR).build();
+        Organisation organisation = organisation("name").ownedBy(someUser).withMembers(newMember).active().build();
+
+        organisationService.promoteMemberBy(organisation, newMember, userFromDifferentOrganisation);
     }
 }

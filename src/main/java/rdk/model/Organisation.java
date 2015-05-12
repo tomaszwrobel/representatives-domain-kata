@@ -2,7 +2,9 @@ package rdk.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import rdk.exception.UnauthorizedAccessException;
 
@@ -12,7 +14,7 @@ public class Organisation {
 
     private User owner;
     
-    private List<User> members;
+    private Set<User> members;
 
     private boolean active = false;
 
@@ -45,9 +47,9 @@ public class Organisation {
         return name;
     }
     
-    public List<User> getMembers() {
+    public Set<User> getMembers() {
         if (members == null) {
-            members = new ArrayList<User>();
+            members = new HashSet<User>();
         }
         return members;
     }
@@ -62,7 +64,7 @@ public class Organisation {
 
         private boolean activationAwaiting;
         
-        private List<User> members;
+        private Set<User> members;
 
         public OrganisationBuilder() {
 
@@ -97,7 +99,7 @@ public class Organisation {
         
         public OrganisationBuilder withMembers(User... users) {
             if (members == null) {
-                members = new ArrayList<User>();
+                members = new HashSet<User>();
             }
             members.addAll(Arrays.asList(users));
             return this;
@@ -110,6 +112,7 @@ public class Organisation {
             newOrganisation.owner = this.owner;
             newOrganisation.activationAwaiting = this.activationAwaiting;
             newOrganisation.active = this.isActive;
+            newOrganisation.members = this.members;
 
             return newOrganisation;
         }
@@ -120,9 +123,13 @@ public class Organisation {
     }
 
     public void addMember(User newMember) {
-        if (!isActive() && (newMember.getRole() != UserRole.OWNER)) {
-            newMember.setRepresentativeRole();
-            getMembers().add(newMember);
+        if (!java.util.Objects.equals(newMember, this.owner)) {
+            if (!isActive()) {   
+                newMember.setRepresentativeRole();
+                getMembers().add(newMember);
+            } else {
+                getMembers().add(newMember);
+            }
         }
     }
 
@@ -156,5 +163,20 @@ public class Organisation {
 
     private boolean assertIsAdmin(User admin) {
         return admin.getRole() == UserRole.ADMIN ? true : false;
+    }
+
+    public void promote(User member, User promotor) throws UnauthorizedAccessException {
+        if (userBelongsToThisOrganisation(member, promotor)) {
+            member.getPromoters().add(promotor);
+        } else {
+            throw new UnauthorizedAccessException("User can be promoted only by users in the same organisation");
+        }
+        if (member.getPromoters().size() == numOfAcknowledgments) {
+            member.setRepresentativeRole();
+        }
+    }
+
+    private boolean userBelongsToThisOrganisation(User member, User promotor) {
+        return getMembers().containsAll(Arrays.asList(member, promotor));
     }
 }
