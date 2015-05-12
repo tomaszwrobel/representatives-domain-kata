@@ -41,4 +41,16 @@ public class UserAssert extends AbstractAssert<UserAssert, User> {
         Assertions.assertThat(organisation.getMembers()).doesNotContain(actual);
         return this;
     }
+    
+    public UserAssert hasNumberOfAcknowledgments(int numOfAcknowledgments) {
+        isNotNull();
+        Assertions.assertThat(actual.getPromoters().size()).isEqualTo(numOfAcknowledgments);
+        return this;
+    }
+    
+    public UserAssert hasBeenPromotedBy(User promotor) {
+        isNotNull();
+        Assertions.assertThat(actual.getPromoters()).contains(promotor);
+        return this;
+    }
 }

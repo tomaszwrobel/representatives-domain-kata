@@ -20,6 +20,7 @@ import rdk.model.Organisation;
 import rdk.model.User;
 import rdk.model.UserRole;
 import rdk.service.OrganisationService;
+import rdk.service.UserService;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -28,16 +29,22 @@ public class OrganisationE2ETest {
 
     private static final String REGULAR_TEST_USER = "regular user";
     private static final int DEFAULT_NUM_OF_ACKNOWLEDGMENTS = 2;
+    private static final String ADMIN_USER = "Admin user";
     
     @Autowired
     OrganisationService organisationService;
+    
+    @Autowired
+    UserService userService;
 
     User owner;
+    User admin;
     Organisation testOrganisation;
 
     @Before
     public void init() {
         owner = user(REGULAR_TEST_USER).withRole(UserRole.REGULAR).build();
+        admin = user(ADMIN_USER).withRole(UserRole.ADMIN).build();
         
         testOrganisation = organisationService.createNewOrganisation("nazwa", owner);
     }
@@ -84,8 +91,6 @@ public class OrganisationE2ETest {
     
     @Test
     public void organisationIsActivatedByAdmin() throws UnauthorizedAccessException {
-        User admin = user("Admin user").withRole(UserRole.ADMIN).build();
-        
         organisationService.activateOrganisation(testOrganisation, admin);
         
         assertThat(testOrganisation.isActive()).isTrue();
@@ -95,11 +100,22 @@ public class OrganisationE2ETest {
     public void userGetsProperNumOfAcknoledgmentsAndBecomeRepresentative() throws UnauthorizedAccessException {
         List<User> someRepresentativeMembers = prepareMembers(3);
         
+        User newUser = user("new User").withRole(UserRole.REGULAR).build();
+        
         organisationService.addMember(testOrganisation, owner, someRepresentativeMembers.get(0));
         organisationService.addMember(testOrganisation, owner, someRepresentativeMembers.get(1));
         organisationService.addMember(testOrganisation, owner, someRepresentativeMembers.get(2));
+        organisationService.activateOrganisation(testOrganisation, admin);
         
+        organisationService.addMember(testOrganisation, owner, newUser);
         
+        userService.promoteUserBy(newUser, someRepresentativeMembers.get(0));
+        userService.promoteUserBy(newUser, someRepresentativeMembers.get(1));
+        userService.promoteUserBy(newUser, someRepresentativeMembers.get(2));
+        
+        assertThat(newUser).isInOrganisationMembers(testOrganisation);
+        assertThat(newUser).hasRole(UserRole.REPRESENTATIVE);
+        assertThat(newUser).hasNumberOfAcknowledgments(DEFAULT_NUM_OF_ACKNOWLEDGMENTS);
     }
     
     private List<User> prepareMembers(int num) {
