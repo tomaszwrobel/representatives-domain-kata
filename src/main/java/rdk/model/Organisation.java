@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import rdk.exception.UnauthorizedAccessException;
+import rdk.exception.UnauthorizedDocumentCreationException;
 
 public class Organisation {
 
@@ -183,8 +184,8 @@ public class Organisation {
         }
     }
 
-    private boolean userBelongsToThisOrganisation(User member, User promotor) {
-        return getMembers().containsAll(Arrays.asList(member, promotor));
+    private boolean userBelongsToThisOrganisation(User... users) {
+        return getMembers().containsAll(Arrays.asList(users));
     }
 
     public void cancelMembersRepresentative(User member, User owner) throws UnauthorizedAccessException {
@@ -195,7 +196,12 @@ public class Organisation {
         }
     }
 
-    public void addDocument(Document createDocumentByUser) {
+    public void addDocument(Document createDocumentByUser) throws UnauthorizedDocumentCreationException {
+        if (userBelongsToThisOrganisation(createDocumentByUser.getCreator())) {
+            getDocuments().add(createDocumentByUser);
+        } else {
+            throw new UnauthorizedDocumentCreationException("Document can be created only by users from within this organisation");
+        }
     }
 
     public List<Document> getDocuments() {
