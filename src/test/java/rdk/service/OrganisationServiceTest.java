@@ -77,7 +77,7 @@ public class OrganisationServiceTest {
     }
     
     @Test
-    public void ownerCannotBecomeRepresentativeUser() throws UnauthorizedAccessException {
+    public void ownerBecomesNotRepresentativeUser() throws UnauthorizedAccessException {
         User organisationOwner = user("user").withRole(UserRole.OWNER).build();
         Organisation organisation = organisation("name").ownedBy(organisationOwner).build();
         
@@ -109,7 +109,7 @@ public class OrganisationServiceTest {
     }
 
     @Test(expected=UnauthorizedAccessException.class)
-    public void regularUserCannotPromoteAnotherUser() throws UnauthorizedAccessException {
+    public void regularUserPromoteAnotherUser() throws UnauthorizedAccessException {
         User regularUser = user("someUser").withRole(UserRole.REGULAR).build();
         User newMember = user("new user").withRole(UserRole.REGULAR).build();
         Organisation organisation = organisation("name").ownedBy(someUser).withMembers(regularUser, newMember).active().build();
@@ -118,11 +118,31 @@ public class OrganisationServiceTest {
     }
 
     @Test(expected=UnauthorizedAccessException.class)
-    public void userCannotBePromotedFromOutsideOfOrganisation() throws UnauthorizedAccessException {
+    public void userFromOutsideOfOrganisationPromotesNewMember() throws UnauthorizedAccessException {
         User userFromDifferentOrganisation = user("user from different organisation").withRole(UserRole.REPRESENTATIVE).build();
         User newMember = user("new user").withRole(UserRole.REGULAR).build();
         Organisation organisation = organisation("name").ownedBy(someUser).withMembers(newMember).active().build();
 
         organisationService.promoteMemberBy(organisation, newMember, userFromDifferentOrganisation);
+    }
+    
+    @Test
+    public void ownerCancelsUserRepresentativeRole() {
+        User newMember = user("new user").withRole(UserRole.REPRESENTATIVE).build();
+        Organisation organisation = organisation("name").ownedBy(someUser).withMembers(newMember).active().build();
+        
+        organisationService.cancelMemberRepresentativeRole(organisation, newMember, someUser);
+        
+        assertThat(newMember).hasRole(UserRole.REGULAR);
+        assertThat(newMember).isInOrganisationMembers(organisation);
+    }
+    
+    @Test(expected=UnauthorizedAccessException.class)
+    public void regularUserCancelsRepresentativeRole() {
+        User regularUser = user("some regular user").withRole(UserRole.REGULAR).build();
+        User newMember = user("new user").withRole(UserRole.REPRESENTATIVE).build();
+        Organisation organisation = organisation("name").ownedBy(someUser).withMembers(newMember).active().build();
+        
+        organisationService.cancelMemberRepresentativeRole(organisation, newMember, regularUser);
     }
 }

@@ -9,22 +9,18 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import rdk.IntegrationTestBase;
 import rdk.exception.UnauthorizedAccessException;
-import rdk.init.ApplicationConfig;
 import rdk.model.Organisation;
 import rdk.model.User;
 import rdk.model.UserRole;
 import rdk.service.OrganisationService;
 
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { ApplicationConfig.class })
-public class OrganisationE2ETest {
+
+public class OrganisationE2ETest extends IntegrationTestBase {
 
     private static final String REGULAR_TEST_USER = "regular user";
     private static final int DEFAULT_NUM_OF_ACKNOWLEDGMENTS = 3;
@@ -94,7 +90,7 @@ public class OrganisationE2ETest {
     
     @Test
     public void userGetsProperNumOfAcknowledgmentsAndBecomeRepresentative() throws UnauthorizedAccessException {
-        List<User> someRepresentativeMembers = prepareMembers(3);
+        List<User> someRepresentativeMembers = prepareRepresentativeMembers(3);
         
         User newUser = user("new User").withRole(UserRole.REGULAR).build();
         
@@ -115,7 +111,19 @@ public class OrganisationE2ETest {
         assertThat(newUser).hasNumberOfAcknowledgments(DEFAULT_NUM_OF_ACKNOWLEDGMENTS);
     }
     
-    private List<User> prepareMembers(int num) {
+    @Test
+    public void ownerCancelsMemberRepresentativeRole() throws UnauthorizedAccessException {
+        User representativeUser = user("some representative user").withRole(UserRole.REPRESENTATIVE).build();
+        
+        organisationService.addMember(testOrganisation, owner, representativeUser);
+        
+        organisationService.cancelMemberRepresentativeRole(testOrganisation, representativeUser, owner);
+        
+        assertThat(representativeUser).isInOrganisationMembers(testOrganisation);
+        assertThat(representativeUser).hasRole(UserRole.REGULAR);
+    }
+    
+    private List<User> prepareRepresentativeMembers(int num) {
         
         List<User> users = new ArrayList<User>();
         

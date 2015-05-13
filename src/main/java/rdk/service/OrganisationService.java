@@ -53,4 +53,7 @@ public class OrganisationService {
     private boolean canBeAPromotor(User promotor) {
         return ((promotor.getRole() == UserRole.REPRESENTATIVE) || (promotor.getRole() == UserRole.ADMIN)) ? true : false;
     }
+
+    public void cancelMemberRepresentativeRole(Organisation organisation, User representativeUser, User owner) {
+    }
 }
