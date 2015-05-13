@@ -73,4 +73,8 @@ public class User {
         }
         return promoters;
     }
+
+    public void cancelRepresentativeRole() {
+        this.role = UserRole.REGULAR;
+    }
 }

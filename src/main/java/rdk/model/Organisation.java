@@ -179,4 +179,12 @@ public class Organisation {
     private boolean userBelongsToThisOrganisation(User member, User promotor) {
         return getMembers().containsAll(Arrays.asList(member, promotor));
     }
+
+    public void cancelMembersRepresentative(User member, User owner) throws UnauthorizedAccessException {
+        if (assertIsAnOwner(owner)) {
+            member.cancelRepresentativeRole();
+        } else {
+            throw new UnauthorizedAccessException("Only owner can demote representative user");
+        }
+    }
 }

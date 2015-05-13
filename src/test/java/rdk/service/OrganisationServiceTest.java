@@ -127,7 +127,7 @@ public class OrganisationServiceTest {
     }
     
     @Test
-    public void ownerCancelsUserRepresentativeRole() {
+    public void ownerCancelsUserRepresentativeRole() throws UnauthorizedAccessException {
         User newMember = user("new user").withRole(UserRole.REPRESENTATIVE).build();
         Organisation organisation = organisation("name").ownedBy(someUser).withMembers(newMember).active().build();
         
@@ -138,7 +138,7 @@ public class OrganisationServiceTest {
     }
     
     @Test(expected=UnauthorizedAccessException.class)
-    public void regularUserCancelsRepresentativeRole() {
+    public void regularUserCancelsRepresentativeRole() throws UnauthorizedAccessException {
         User regularUser = user("some regular user").withRole(UserRole.REGULAR).build();
         User newMember = user("new user").withRole(UserRole.REPRESENTATIVE).build();
         Organisation organisation = organisation("name").ownedBy(someUser).withMembers(newMember).active().build();
