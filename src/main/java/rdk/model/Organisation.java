@@ -1,7 +1,9 @@
 package rdk.model;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import rdk.exception.UnauthorizedAccessException;
@@ -19,6 +21,8 @@ public class Organisation {
     private boolean activationAwaiting = false;
 
     private int numOfAcknowledgments = 3;
+
+    private List<Document> documents;
 
     public boolean isActive() {
         return active;
@@ -189,5 +193,15 @@ public class Organisation {
         } else {
             throw new UnauthorizedAccessException("Only owner can demote representative user");
         }
+    }
+
+    public void addDocument(Document createDocumentByUser) {
+    }
+
+    public List<Document> getDocuments() {
+        if (documents == null) {
+            documents = new ArrayList<Document>();
+        }
+        return documents;
     }
 }

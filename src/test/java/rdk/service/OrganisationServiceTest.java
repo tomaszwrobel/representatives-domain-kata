@@ -1,25 +1,35 @@
 package rdk.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static rdk.model.User.UserBuilder.user;
+import static rdk.assertions.UserAssert.assertThat;
+import static rdk.assertions.OrganisationAssert.assertThat;
 import static rdk.model.Organisation.OrganisationBuilder.organisation;
-
-import java.util.Arrays;
+import static rdk.model.User.UserBuilder.user;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import rdk.exception.UnauthorizedAccessException;
+import rdk.exception.UnauthorizedDocumentCreationException;
+import rdk.model.Document;
 import rdk.model.Organisation;
 import rdk.model.User;
 import rdk.model.UserRole;
-import static rdk.assertions.UserAssert.assertThat;
 
-
+@RunWith(MockitoJUnitRunner.class)
 public class OrganisationServiceTest {
 
     private static final String USER_NAME = "someUser";
+    
+    @Mock
+    DocumentService documentService;
 
+    @InjectMocks
     OrganisationService organisationService = new OrganisationService();
 
     User someUser;
@@ -144,5 +154,25 @@ public class OrganisationServiceTest {
         Organisation organisation = organisation("name").ownedBy(someUser).withMembers(newMember).active().build();
         
         organisationService.cancelMemberRepresentativeRole(organisation, newMember, regularUser);
+    }
+    
+    @Test(expected=UnauthorizedDocumentCreationException.class)
+    public void documentCannotBeCreatedWhenOrganisationIsInActive() throws UnauthorizedDocumentCreationException {
+        User newMember = user("new user").withRole(UserRole.REPRESENTATIVE).build();
+        Organisation inActiveOrganisation = organisation("name").ownedBy(someUser).inActive().withMembers(newMember).build();
+        
+        organisationService.addNewDocumentByUser(inActiveOrganisation, newMember);
+    }
+    
+    @Test
+    public void addsDocumentToOrganisation() throws UnauthorizedDocumentCreationException {
+        User newMember = user("new user").withRole(UserRole.REPRESENTATIVE).build();
+        Organisation organisation = organisation("name").ownedBy(someUser).withMembers(newMember).active().build();
+        
+        when(documentService.createDocumentByUser(newMember)).thenReturn(new Document(newMember));
+        
+        organisationService.addNewDocumentByUser(organisation, newMember);
+        
+        assertThat(organisation).hasNumOfDocuments(1);
     }
 }

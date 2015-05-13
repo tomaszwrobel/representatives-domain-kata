@@ -2,9 +2,11 @@ package rdk.service;
 
 import static rdk.model.Organisation.OrganisationBuilder.organisation;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import rdk.exception.UnauthorizedAccessException;
+import rdk.exception.UnauthorizedDocumentCreationException;
 import rdk.model.Organisation;
 import rdk.model.User;
 import rdk.model.UserRole;
@@ -12,6 +14,9 @@ import rdk.model.UserRole;
 
 @Service
 public class OrganisationService {
+
+    @Autowired
+    private DocumentService documentService;
 
     public Organisation createNewOrganisation(String name, User user) {
         user.setOwnerRole();
@@ -58,6 +63,11 @@ public class OrganisationService {
         organisation.cancelMembersRepresentative(representativeUser, owner);
     }
 
-    public void addNewDocumentByUser(User organisationRepresentativeMember) {
+    public void addNewDocumentByUser(Organisation organisation, User organisationRepresentativeMember) throws UnauthorizedDocumentCreationException {
+        if (organisation.isActive()) {
+            organisation.addDocument(documentService.createDocumentByUser(organisationRepresentativeMember));
+        } else {
+            throw new UnauthorizedDocumentCreationException("Documents cannot be made when organisation is inactive");
+        }
     }
 }
