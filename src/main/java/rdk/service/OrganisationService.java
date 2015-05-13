@@ -57,4 +57,7 @@ public class OrganisationService {
     public void cancelMemberRepresentativeRole(Organisation organisation, User representativeUser, User owner) throws UnauthorizedAccessException {
         organisation.cancelMembersRepresentative(representativeUser, owner);
     }
+
+    public void addNewDocumentByUser(User organisationRepresentativeMember) {
+    }
 }

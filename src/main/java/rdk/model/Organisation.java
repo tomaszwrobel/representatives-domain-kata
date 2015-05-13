@@ -1,9 +1,7 @@
 package rdk.model;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import rdk.exception.UnauthorizedAccessException;
@@ -94,6 +92,11 @@ public class Organisation {
 
         public OrganisationBuilder active() {
             this.isActive = true;
+            return this;
+        }
+        
+        public OrganisationBuilder inActive() {
+            this.isActive = false;
             return this;
         }
         
