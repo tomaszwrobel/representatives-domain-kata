@@ -210,4 +210,8 @@ public class Organisation {
         }
         return documents;
     }
+
+    public int getNumOfRequiredDocumentConfirmations() {
+        return 0;
+    }
 }

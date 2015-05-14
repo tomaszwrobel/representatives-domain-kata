@@ -70,4 +70,7 @@ public class OrganisationService {
             throw new UnauthorizedDocumentCreationException("Documents cannot be made when organisation is inactive");
         }
     }
+
+    public void setNumOfRequiredDocumentConfirmations(Organisation testOrganisation, int defaultNumOfDocumentConfirmations, User owner) {
+    }
 }

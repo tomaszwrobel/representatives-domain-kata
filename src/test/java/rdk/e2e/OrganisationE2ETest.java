@@ -25,6 +25,7 @@ public class OrganisationE2ETest extends IntegrationTestBase {
     private static final String REGULAR_TEST_USER = "regular user";
     private static final int DEFAULT_NUM_OF_ACKNOWLEDGMENTS = 3;
     private static final String ADMIN_USER = "Admin user";
+    private static final int DEFAULT_NUM_OF_DOCUMENT_CONFIRMATIONS = 3;
     
     @Autowired
     OrganisationService organisationService;
@@ -121,6 +122,14 @@ public class OrganisationE2ETest extends IntegrationTestBase {
         
         assertThat(representativeUser).isInOrganisationMembers(testOrganisation);
         assertThat(representativeUser).hasRole(UserRole.REGULAR);
+    }
+    
+    @Test
+    public void ownerSetRequiredNumberOfDocumentConfirmation() {
+        
+        organisationService.setNumOfRequiredDocumentConfirmations(testOrganisation, DEFAULT_NUM_OF_DOCUMENT_CONFIRMATIONS, owner);
+        
+        assertThat(testOrganisation.getNumOfRequiredDocumentConfirmations()).isEqualTo(DEFAULT_NUM_OF_DOCUMENT_CONFIRMATIONS);
     }
     
     private List<User> prepareRepresentativeMembers(int num) {
