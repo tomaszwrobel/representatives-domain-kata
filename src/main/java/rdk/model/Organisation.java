@@ -22,6 +22,8 @@ public class Organisation {
     private boolean activationAwaiting = false;
 
     private int numOfAcknowledgments = 3;
+    
+    private int numOfDocumentConfirmations = 3;
 
     private List<Document> documents;
 
@@ -212,6 +214,10 @@ public class Organisation {
     }
 
     public int getNumOfRequiredDocumentConfirmations() {
-        return 0;
+        return numOfDocumentConfirmations;
+    }
+    
+    public void setNumOfRequiredDocumentConfirmation(int numOfRequiredDocumentConfirmation, User owner) {
+        this.numOfDocumentConfirmations = numOfRequiredDocumentConfirmation;
     }
 }

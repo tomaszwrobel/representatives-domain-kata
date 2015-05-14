@@ -39,8 +39,8 @@ public class OrganisationService {
         }
     }
 
-    public void setNumOfRequiredAcknowledgments(Organisation organisation, int defaultNumOfAcknowledgments, User owner) throws UnauthorizedAccessException {
-        organisation.setNumOfRequiredAcknowledgments(defaultNumOfAcknowledgments, owner);
+    public void setNumOfRequiredAcknowledgments(Organisation organisation, int numOfAcknowledgments, User owner) throws UnauthorizedAccessException {
+        organisation.setNumOfRequiredAcknowledgments(numOfAcknowledgments, owner);
     }
 
     public void activateOrganisation(Organisation organisation, User admin) throws UnauthorizedAccessException {
@@ -71,6 +71,7 @@ public class OrganisationService {
         }
     }
 
-    public void setNumOfRequiredDocumentConfirmations(Organisation testOrganisation, int defaultNumOfDocumentConfirmations, User owner) {
+    public void setNumOfRequiredDocumentConfirmations(Organisation organisation, int numOfDocumentConfirmations, User owner) {
+        organisation.setNumOfRequiredDocumentConfirmation(numOfDocumentConfirmations, owner);
     }
 }
