@@ -3,16 +3,16 @@ package rdk.assertions;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 
-import rdk.model.Organisation;
+import rdk.model.Organization;
 
 
-public class OrganisationAssert extends AbstractAssert<OrganisationAssert, Organisation> {
+public class OrganisationAssert extends AbstractAssert<OrganisationAssert, Organization> {
 
-    protected OrganisationAssert(Organisation actual) {
+    protected OrganisationAssert(Organization actual) {
         super(actual, OrganisationAssert.class);
     }
 
-    public static OrganisationAssert assertThat(Organisation actual) {
+    public static OrganisationAssert assertThat(Organization actual) {
         return new OrganisationAssert(actual);
     }
     

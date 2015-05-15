@@ -3,6 +3,8 @@ package rdk.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import rdk.exception.UnauthorizedAccessException;
+
 public class User {
 
     private static final User USER_NO_ORGANISATION = UserBuilder.user("without organisation").withRole(UserRole.REGULAR)
@@ -76,5 +78,13 @@ public class User {
 
     public void cancelRepresentativeRole() {
         this.role = UserRole.REGULAR;
+    }
+    
+    public void promoteBy(User promotor) throws UnauthorizedAccessException {
+        if (promotor.getRole().equals(UserRole.REPRESENTATIVE)) {
+            getPromoters().add(promotor);
+        } else {
+            throw new UnauthorizedAccessException("User can be promoted only by representative users");
+        }
     }
 }

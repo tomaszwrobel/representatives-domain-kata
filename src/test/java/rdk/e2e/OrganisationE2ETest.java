@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import rdk.IntegrationTestBase;
 import rdk.exception.UnauthorizedAccessException;
-import rdk.model.Organisation;
+import rdk.model.Organization;
 import rdk.model.User;
 import rdk.model.UserRole;
-import rdk.service.OrganisationService;
+import rdk.service.OrganizationService;
 
 
 
@@ -28,65 +28,78 @@ public class OrganisationE2ETest extends IntegrationTestBase {
     private static final int DEFAULT_NUM_OF_DOCUMENT_CONFIRMATIONS = 3;
     
     @Autowired
-    OrganisationService organisationService;
+    OrganizationService organizationService;
     
     User owner;
     User admin;
-    Organisation testOrganisation;
+    Organization testOrganization;
 
     @Before
     public void init() {
         owner = user(REGULAR_TEST_USER).withRole(UserRole.REGULAR).build();
         admin = user(ADMIN_USER).withRole(UserRole.ADMIN).build();
         
-        testOrganisation = organisationService.createNewOrganisation("nazwa", owner);
+        testOrganization = organizationService.createNewOrganisation("nazwa", owner);
     }
     
     @Test
     public void newOrganisationIsInActive() {
-        assertThat(testOrganisation.isActive()).isFalse();
+        assertThat(testOrganization.isActive()).isFalse();
     }
     
     @Test
     public void userBecomeOwnerOfNewCreatedOrganisation() {
         assertThat(owner).hasRole(UserRole.OWNER);
-        assertThat(owner).isOwnerOfOrganisation(testOrganisation);
+        assertThat(owner).isOwnerOf(testOrganization);
     }
 
     @Test
     public void ownerRequestsForActivation() throws UnauthorizedAccessException {
 
-        organisationService.requestForActivation(testOrganisation, owner);
+        organizationService.requestForActivation(testOrganization, owner);
 
-        assertThat(testOrganisation.isActivationAwaiting()).isTrue();
+        assertThat(testOrganization.isActivationAwaiting()).isTrue();
     }
     
     @Test
     public void addsMemberToNewInActiveOrganisation() throws UnauthorizedAccessException {
         User newMember = user("newMember").withRole(UserRole.REGULAR).build();
         
-        assertThat(testOrganisation.isActive()).isFalse();
-        assertThat(newMember).hasRole(UserRole.REGULAR);
+        assertThat(testOrganization.isActive()).isFalse();
         
-        organisationService.addMember(testOrganisation, owner, newMember);
+        organizationService.addMember(testOrganization, owner, newMember);
         
-        assertThat(newMember).hasRole(UserRole.REPRESENTATIVE);
-        assertThat(newMember).isInOrganisationMembers(testOrganisation);
+        assertThat(newMember).isInOrganisationMembers(testOrganization);
+    }
+    
+    @Test
+    public void ownerPromoteNewMemberToBeRepresentative() throws UnauthorizedAccessException {
+        User newMember = user("newMember").withRole(UserRole.REGULAR).build();
+        
+        assertThat(testOrganization.isActive()).isFalse();
+        
+        organizationService.addMember(testOrganization, owner, newMember);
+        
+        assertThat(newMember).isInOrganisationMembers(testOrganization);
+        
+        organizationService.promoteMemberBy(testOrganization, newMember, owner);
+        
+        assertThat(newMember).isRepresentative();
     }
     
     @Test
     public void ownerSetsRequiredNumberOfAcknowledgmentsForRepresentativeUser() throws UnauthorizedAccessException {
         
-        organisationService.setNumOfRequiredAcknowledgments(testOrganisation, DEFAULT_NUM_OF_ACKNOWLEDGMENTS, owner);
+        organizationService.setNumOfRequiredAcknowledgments(testOrganization, DEFAULT_NUM_OF_ACKNOWLEDGMENTS, owner);
         
-        assertThat(testOrganisation.getNumOfAcknowledgments()).isEqualTo(DEFAULT_NUM_OF_ACKNOWLEDGMENTS);
+//        assertThat(testOrganisation.getNumOfAcknowledgments()).isEqualTo(DEFAULT_NUM_OF_ACKNOWLEDGMENTS);
     }
     
     @Test
     public void organisationIsActivatedByAdmin() throws UnauthorizedAccessException {
-        organisationService.activateOrganisation(testOrganisation, admin);
+        organizationService.activateOrganisation(testOrganization, admin);
         
-        assertThat(testOrganisation.isActive()).isTrue();
+        assertThat(testOrganization.isActive()).isTrue();
     }
     
     @Test
@@ -95,41 +108,55 @@ public class OrganisationE2ETest extends IntegrationTestBase {
         
         User newUser = user("new User").withRole(UserRole.REGULAR).build();
         
-        organisationService.addMember(testOrganisation, owner, someRepresentativeMembers.get(0));
-        organisationService.addMember(testOrganisation, owner, someRepresentativeMembers.get(1));
-        organisationService.addMember(testOrganisation, owner, someRepresentativeMembers.get(2));
-        organisationService.activateOrganisation(testOrganisation, admin);
-        organisationService.setNumOfRequiredAcknowledgments(testOrganisation, DEFAULT_NUM_OF_ACKNOWLEDGMENTS, owner);
+        organizationService.addMember(testOrganization, owner, someRepresentativeMembers.get(0));
+        organizationService.addMember(testOrganization, owner, someRepresentativeMembers.get(1));
+        organizationService.addMember(testOrganization, owner, someRepresentativeMembers.get(2));
+        organizationService.activateOrganisation(testOrganization, admin);
+        organizationService.setNumOfRequiredAcknowledgments(testOrganization, DEFAULT_NUM_OF_ACKNOWLEDGMENTS, owner);
         
-        organisationService.addMember(testOrganisation, owner, newUser);
+        organizationService.addMember(testOrganization, owner, newUser);
         
-        organisationService.promoteMemberBy(testOrganisation, newUser, someRepresentativeMembers.get(0));
-        organisationService.promoteMemberBy(testOrganisation, newUser, someRepresentativeMembers.get(1));
-        organisationService.promoteMemberBy(testOrganisation, newUser, someRepresentativeMembers.get(2));
+        organizationService.promoteMemberBy(testOrganization, newUser, someRepresentativeMembers.get(0));
+        organizationService.promoteMemberBy(testOrganization, newUser, someRepresentativeMembers.get(1));
+        organizationService.promoteMemberBy(testOrganization, newUser, someRepresentativeMembers.get(2));
         
-        assertThat(newUser).isInOrganisationMembers(testOrganisation);
+        assertThat(newUser).isInOrganisationMembers(testOrganization);
         assertThat(newUser).hasRole(UserRole.REPRESENTATIVE);
         assertThat(newUser).hasNumberOfAcknowledgments(DEFAULT_NUM_OF_ACKNOWLEDGMENTS);
+    }
+    
+    @Test
+    public void userLessNumOfAcknowledgmentsAndNotBecomesRepresentative() throws UnauthorizedAccessException {
+        List<User> someRepresentativeMembers = prepareRepresentativeMembers(3);
+        
+        User newUser = user("new User").withRole(UserRole.REGULAR).build();
+        
+        organizationService.addMember(testOrganization, owner, someRepresentativeMembers.get(0));
+        organizationService.addMember(testOrganization, owner, someRepresentativeMembers.get(1));
+        organizationService.addMember(testOrganization, owner, someRepresentativeMembers.get(2));
+        organizationService.activateOrganisation(testOrganization, admin);
+        organizationService.setNumOfRequiredAcknowledgments(testOrganization, DEFAULT_NUM_OF_ACKNOWLEDGMENTS, owner);
+        
+        organizationService.addMember(testOrganization, owner, newUser);
+        
+        organizationService.promoteMemberBy(testOrganization, newUser, someRepresentativeMembers.get(0));
+        organizationService.promoteMemberBy(testOrganization, newUser, someRepresentativeMembers.get(1));
+        
+        assertThat(newUser).isInOrganisationMembers(testOrganization);
+        assertThat(newUser).hasRole(UserRole.REGULAR);
+        assertThat(newUser).hasNumberOfAcknowledgments(DEFAULT_NUM_OF_ACKNOWLEDGMENTS - 1);
     }
     
     @Test
     public void ownerCancelsMemberRepresentativeRole() throws UnauthorizedAccessException {
         User representativeUser = user("some representative user").withRole(UserRole.REPRESENTATIVE).build();
         
-        organisationService.addMember(testOrganisation, owner, representativeUser);
+        organizationService.addMember(testOrganization, owner, representativeUser);
         
-        organisationService.cancelMemberRepresentativeRole(testOrganisation, representativeUser, owner);
+        organizationService.cancelMemberRepresentativeRole(testOrganization, representativeUser, owner);
         
-        assertThat(representativeUser).isInOrganisationMembers(testOrganisation);
+        assertThat(representativeUser).isInOrganisationMembers(testOrganization);
         assertThat(representativeUser).hasRole(UserRole.REGULAR);
-    }
-    
-    @Test
-    public void ownerSetRequiredNumberOfDocumentConfirmation() {
-        
-        organisationService.setNumOfRequiredDocumentConfirmations(testOrganisation, DEFAULT_NUM_OF_DOCUMENT_CONFIRMATIONS, owner);
-        
-        assertThat(testOrganisation.getNumOfRequiredDocumentConfirmations()).isEqualTo(DEFAULT_NUM_OF_DOCUMENT_CONFIRMATIONS);
     }
     
     private List<User> prepareRepresentativeMembers(int num) {
